@@ -88,24 +88,36 @@
 	{% assign v_limit = 1000  %}
 {% endif %}
 
+{% assign product_count = 0 %}
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
     <channel>
         <title>{{shop.name | escape }} Products {{ getVariant }} {{ CollectionValue }}</title>
-        <description>Google Product Feed </description>
-        <g:link>{{shop.url}}</g:link>
-        {% paginate collections[CollectionValue].products by 1000 %}
+        <description>Google Product Feed</description>
+        <link>{{shop.url}}</link>
+        {% paginate collections[CollectionValue].products by v_limit %}
             {% for product in collections[CollectionValue].products limit:p_limit -%}
+                {% assign product_count = product_count | plus:1 %}
+                {% if upn == '1' and product_count >= 1000 %}
+                    {% break %}
+                {% endif %}
+                {% if upn == 'null' and product_count >= 50 %}
+                    {% break %}
+                {% endif %}
                 <item>
-                    <title>{% if productTitle == 'default' %}<![CDATA[{{ product.title | strip_html | strip_newlines | escape | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: " & ","and" | escape }}]]>{% else %}{% assign instructions = product.metafields.global %}{{ instructions.title_tag | escape }}{% endif %}</title>
+                    <title>{% if productTitle == 'default' %}<![CDATA[{{ product.title | strip_html | strip_newlines | escape | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "Ã©", "e" | replace: "Ã ", "a" }}]]>{% else %}{% assign instructions = product.metafields.global %}{{ instructions.title_tag | strip_html | strip_newlines | escape }}{% endif %}</title>
                     <g:brand>{% if brand == 'Domain' %}{{ shop.url }}{% else %}{{product.vendor | escape }}{% endif %}</g:brand>
                     <g:product_type>{{product.type | escape }}</g:product_type>
                     <g:id>{% if productIdFormat == 'global' %}{{'Shopify_'}}{{shop.currency}}_{{product.id }}_{% for variant in product.variants limit:1%}{{variant.id}}{% endfor%}{% elsif productIdFormat == 'sku' %}{% for variant in product.variants limit:1%}{{variant.sku}}{% endfor%}{% elsif productIdFormat == 'variant' %}{% for variant in product.variants limit:1%}{{variant.id}}{% endfor%}{% endif %}</g:id>
                     <g:condition>{{ productCondition }}</g:condition>
                   	<g:age_group>{{ ageGroup }}</g:age_group>
                     <g:gender>{{ gender }}</g:gender>
-                    <description><![CDATA[{{ product.description | strip_html | strip_newlines | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "..", ". " | replace: "  ", " " | replace: "â€˜", "&#39;" | replace: "â€™", "&#39;" | replace: "&#8216;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "Ã¢â‚¬â„¢", "&#39;" | replace: "Ã¢â‚¬Å“", "&#39;" | replace: "Ã¢â‚¬Ëœ", "&#39;"  | replace: "Ã‚Â´", "&#39;" | replace: "â€œ", "&#34;" | replace: "â€", "&#34;" | replace: "&#8211;", "-" | replace: "Ã¢â‚¬â€œ", "-" | replace: "Ã¢â‚¬â€", "-" | replace: "â€“", "&mdash;" | replace: "â€”", "&mdash;" | replace: "%", "&#37;" | replace: "Ã‚Â©", "&copy;" | replace: "Ã‚Â®", "&reg;" | replace: "Ã¢â€žÂ¢", "&trade;" | replace: "Ã‚Â£", "&pound;" | replace: "Ã¯Â¿Â", "&#42;" | replace: "Ã¢â‚¬Â¢", "&#42;" | replace: "Ã¢â‚¬Â", "&#39;" | replace: "&#233;", "e" | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: "Ã³", "o" | replace: "Ãª", "e" | replace: "ÃƒËœ", "O" | replace: "&#8482;", "" | replace: "&#174;", "" }}]]></description>
+                    {% if productdescription == 'seo' %}
+                    	<description><![CDATA[{{ product.metafields.global.description_tag | strip_html | strip_newlines | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "..", ". " | replace: "  ", " " | replace: "â€˜", "&#39;" | replace: "â€™", "&#39;" | replace: "&#8216;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "Ã¢â‚¬â„¢", "&#39;" | replace: "Ã¢â‚¬Å“", "&#39;" | replace: "Ã¢â‚¬Ëœ", "&#39;"  | replace: "Ã‚Â´", "&#39;" | replace: "â€œ", "&#34;" | replace: "â€", "&#34;" | replace: "&#8211;", "-" | replace: "Ã¢â‚¬â€œ", "-" | replace: "Ã¢â‚¬â€", "-" | replace: "â€“", "&mdash;" | replace: "â€”", "&mdash;" | replace: "%", "&#37;" | replace: "Ã‚Â©", "&copy;" | replace: "Ã‚Â®", "&reg;" | replace: "Ã¢â€žÂ¢", "&trade;" | replace: "Ã‚Â£", "&pound;" | replace: "Ã¯Â¿Â", "&#42;" | replace: "Ã¢â‚¬Â¢", "&#42;" | replace: "Ã¢â‚¬Â", "&#39;" | replace: "&#233;", "e" | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: "Ã³", "o" | replace: "Ãª", "e" | replace: "ÃƒËœ", "O" | replace: "&#8482;", "" | replace: "&#174;", "" }}]]></description>
+                    {% else %}
+                    	<description><![CDATA[{{ product.description | strip_html | strip_newlines | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "..", ". " | replace: "  ", " " | replace: "â€˜", "&#39;" | replace: "â€™", "&#39;" | replace: "&#8216;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "Ã¢â‚¬â„¢", "&#39;" | replace: "Ã¢â‚¬Å“", "&#39;" | replace: "Ã¢â‚¬Ëœ", "&#39;"  | replace: "Ã‚Â´", "&#39;" | replace: "â€œ", "&#34;" | replace: "â€", "&#34;" | replace: "&#8211;", "-" | replace: "Ã¢â‚¬â€œ", "-" | replace: "Ã¢â‚¬â€", "-" | replace: "â€“", "&mdash;" | replace: "â€”", "&mdash;" | replace: "%", "&#37;" | replace: "Ã‚Â©", "&copy;" | replace: "Ã‚Â®", "&reg;" | replace: "Ã¢â€žÂ¢", "&trade;" | replace: "Ã‚Â£", "&pound;" | replace: "Ã¯Â¿Â", "&#42;" | replace: "Ã¢â‚¬Â¢", "&#42;" | replace: "Ã¢â‚¬Â", "&#39;" | replace: "&#233;", "e" | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: "Ã³", "o" | replace: "Ãª", "e" | replace: "ÃƒËœ", "O" | replace: "&#8482;", "" | replace: "&#174;", "" }}]]></description>
+                    {% endif %}
                     <g:image_link>{{product.featured_image | product_img_url: 'large'}}</g:image_link>
-                    <g:link>{{shop.url}}{{product.url}}</g:link>
+                    <link>{{shop.url}}{{product.url}}</link>
                     <g:price>{{product.compare_at_price
                     | money_without_currency}} {{ shop.currency }}</g:price>
   					<g:sale_price>{{product.price | money_without_currency}} {{ shop.currency }}</g:sale_price>
@@ -124,11 +136,8 @@
                     {% if gtinSubmission == "1" %}
   					{% for variant in product.variants limit:1 %}{% if variant.barcode %}<g:gtin>{{variant.barcode}}</g:gtin>{% endif %}{% endfor %}
 					{% endif %}
-  					{% for variant in product.variants limit:1 %}{% if variant.sku %}<g:mpn><![CDATA[{{variant.sku}}]]></g:mpn>{% endif %}{% endfor %}
-  					{% assign unit_price_weight = product.variants.first.weight %}
-  					{% if unit_price_weight > 0 %}
+  					{% for variant in product.variants limit:1 %}{% if variant.sku %}<g:mpn>{{variant.sku | escape}}</g:mpn>{% endif %}{% endfor %}
                     <g:unit_pricing_measure>{{ product.variants.first.weight | weight_with_unit }}</g:unit_pricing_measure>
-                    {% endif %}
                     {%- for option in product.options -%}
                       {%- if option contains option1Name -%}
   						 {%- if forloop.index == 1 -%}
@@ -168,24 +177,29 @@
                       {% endif %}
   					{% endfor -%}
                 </item>
-				{% if variantSubmission == 'all' and upn != 'null' and upn != '1' %}
+				{% if variantSubmission == 'all' %}
                 {% for variant in product.variants %}
+                    {% assign product_count = product_count | plus:1 %}
 					{% if forloop.first == true %}{% continue %}{% endif %}
 				<item>
-                    <title><![CDATA[{{ product.title | strip_html | strip_newlines | escape | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: " & ","and" | escape }} {{ variant.title | strip_html | strip_newlines | escape | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: " & ","and" | escape }}]]></title>
+                    <title><![CDATA[{{ product.title | strip_html | strip_newlines | escape | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "Ã©", "e" | replace: "Ã ", "a" }} {{ variant.title | strip_html | strip_newlines | escape | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "Ã©", "e" | replace: "Ã ", "a" }}]]></title>
                     <g:brand>{% if brand == 'Domain' %}{{ shop.url }}{% else %}{{product.vendor | escape }}{% endif %}</g:brand>
                     <g:product_type>{{product.type | escape }}</g:product_type>
-                   	<g:id>{% if productIdFormat == 'global' %}{{'Shopify_'}}{{shop.currency}}_{{product.id }}_{{variant.id}}{% elsif productIdFormat == 'sku' %}{{variant.sku}}{% else %}{{variant.id}}{% endif %}</g:id>
+                   	<g:id>{% if productIdFormat == 'global' %}{{'Shopify_'}}{{shop.currency}}_{{product.id }}}_{{variant.id}}{% elsif productIdFormat == 'sku' %}{{variant.sku}}{% else %}{{variant.id}}{% endif %}</g:id>
                     <g:condition>{{ productCondition }}</g:condition>
                   	<g:age_group>{{ ageGroup }}</g:age_group>
                     <g:gender>{{ gender }}</g:gender>
-                    <description><![CDATA[{{ product.description | strip_html | strip_newlines | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "..", ". " | replace: "  ", " " | replace: "â€˜", "&#39;" | replace: "â€™", "&#39;" | replace: "&#8216;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "Ã¢â‚¬â„¢", "&#39;" | replace: "Ã¢â‚¬Å“", "&#39;" | replace: "Ã¢â‚¬Ëœ", "&#39;"  | replace: "Ã‚Â´", "&#39;" | replace: "â€œ", "&#34;" | replace: "â€", "&#34;" | replace: "&#8211;", "-" | replace: "Ã¢â‚¬â€œ", "-" | replace: "Ã¢â‚¬â€", "-" | replace: "â€“", "&mdash;" | replace: "â€”", "&mdash;" | replace: "%", "&#37;" | replace: "Ã‚Â©", "&copy;" | replace: "Ã‚Â®", "&reg;" | replace: "Ã¢â€žÂ¢", "&trade;" | replace: "Ã‚Â£", "&pound;" | replace: "Ã¯Â¿Â", "&#42;" | replace: "Ã¢â‚¬Â¢", "&#42;" | replace: "Ã¢â‚¬Â", "&#39;" | replace: "&#233;", "e" | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: "Ã³", "o" | replace: "Ãª", "e" | replace: "ÃƒËœ", "O" | replace: "&#8482;", "" | replace: "&#174;", "" }}]]></description>
+                    {% if productdescription == 'seo' %}
+                    	<description><![CDATA[{{ product.metafields.global.description_tag | strip_html | strip_newlines | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "..", ". " | replace: "  ", " " | replace: "â€˜", "&#39;" | replace: "â€™", "&#39;" | replace: "&#8216;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "Ã¢â‚¬â„¢", "&#39;" | replace: "Ã¢â‚¬Å“", "&#39;" | replace: "Ã¢â‚¬Ëœ", "&#39;"  | replace: "Ã‚Â´", "&#39;" | replace: "â€œ", "&#34;" | replace: "â€", "&#34;" | replace: "&#8211;", "-" | replace: "Ã¢â‚¬â€œ", "-" | replace: "Ã¢â‚¬â€", "-" | replace: "â€“", "&mdash;" | replace: "â€”", "&mdash;" | replace: "%", "&#37;" | replace: "Ã‚Â©", "&copy;" | replace: "Ã‚Â®", "&reg;" | replace: "Ã¢â€žÂ¢", "&trade;" | replace: "Ã‚Â£", "&pound;" | replace: "Ã¯Â¿Â", "&#42;" | replace: "Ã¢â‚¬Â¢", "&#42;" | replace: "Ã¢â‚¬Â", "&#39;" | replace: "&#233;", "e" | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: "Ã³", "o" | replace: "Ãª", "e" | replace: "ÃƒËœ", "O" | replace: "&#8482;", "" | replace: "&#174;", "" }}]]></description>
+                    {% else %}
+                    	<description><![CDATA[{{ product.description | strip_html | strip_newlines | replace: 'amp;', 'and' | replace: '&#38;', 'and' | replace: "..", ". " | replace: "  ", " " | replace: "â€˜", "&#39;" | replace: "â€™", "&#39;" | replace: "&#8216;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "&#8217;", "&#39;" | replace: "Ã¢â‚¬â„¢", "&#39;" | replace: "Ã¢â‚¬Å“", "&#39;" | replace: "Ã¢â‚¬Ëœ", "&#39;"  | replace: "Ã‚Â´", "&#39;" | replace: "â€œ", "&#34;" | replace: "â€", "&#34;" | replace: "&#8211;", "-" | replace: "Ã¢â‚¬â€œ", "-" | replace: "Ã¢â‚¬â€", "-" | replace: "â€“", "&mdash;" | replace: "â€”", "&mdash;" | replace: "%", "&#37;" | replace: "Ã‚Â©", "&copy;" | replace: "Ã‚Â®", "&reg;" | replace: "Ã¢â€žÂ¢", "&trade;" | replace: "Ã‚Â£", "&pound;" | replace: "Ã¯Â¿Â", "&#42;" | replace: "Ã¢â‚¬Â¢", "&#42;" | replace: "Ã¢â‚¬Â", "&#39;" | replace: "&#233;", "e" | replace: "Ã©", "e" | replace: "Ã ", "a" | replace: "Ã³", "o" | replace: "Ãª", "e" | replace: "ÃƒËœ", "O" | replace: "&#8482;", "" | replace: "&#174;", "" }}]]></description>
+                    {% endif %}
                     {% if variant.image %}
                     <g:image_link>{{ variant.image.src | product_img_url: 'large'}}</g:image_link>
                     {% else %}
                     <g:image_link>{{product.featured_image | product_img_url: 'large'}}</g:image_link>
                     {% endif %}
-                    <g:link>{{shop.url}}{{product.url}}</g:link>
+                    <link>{{shop.url}}{{product.url}}</link>
                     <g:price>{{variant.compare_at_price | money_without_currency}} {{ shop.currency }}</g:price>
   					<g:sale_price>{{variant.price | money_without_currency}} {{ shop.currency }}</g:sale_price>
   					{% if variant.available %}
@@ -198,11 +212,8 @@
 					{% if gtinSubmission == "1" %}
   					{% if variant.barcode %}<g:gtin>{{variant.barcode}}</g:gtin>{% endif %}
 					{% endif %}
-  					{% if variant.sku %}<g:mpn><![CDATA[{{variant.sku}}]]></g:mpn>{% endif %}
-  					{% assign unit_price_weight = product.variants.first.weight %}
-  					{% if unit_price_weight > 0 %}
+  					{% if variant.sku %}<g:mpn>{{variant.sku | escape}}</g:mpn>{% endif %}
                     <g:unit_pricing_measure>{{ variant.weight | weight_with_unit }}</g:unit_pricing_measure>
-                    {% endif %}
                     {%- for option in product.options -%}
                       {%- if option contains option1Name -%}
   						 {%- if forloop.index == 1 -%}
